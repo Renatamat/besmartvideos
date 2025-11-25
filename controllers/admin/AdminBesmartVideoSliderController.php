@@ -49,14 +49,6 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                 'title' => $this->l('Mobile video'),
                 'filter_key' => 'b!mobile_video',
             ],
-            'desktop_poster' => [
-                'title' => $this->l('Desktop poster'),
-                'filter_key' => 'b!desktop_poster',
-            ],
-            'mobile_poster' => [
-                'title' => $this->l('Mobile poster'),
-                'filter_key' => 'b!mobile_poster',
-            ],
             'position' => [
                 'title' => $this->l('Position'),
                 'filter_key' => 'a!position',
@@ -99,16 +91,16 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         parent::initPageHeaderToolbar();
     }
 
-    public function renderList()
-    {
-        $this->_select = 'b.`button_label`, b.`desktop_video`, b.`mobile_video`, b.`desktop_poster`, b.`mobile_poster`';
-        $this->_group = '';
+   public function renderList()
+{
+    $this->_select = 'b.`button_label`, b.`desktop_video`, b.`mobile_video`';
+    $this->_group = '';
 
-        $this->addRowAction('edit');
-        $this->addRowAction('delete');
+    $this->addRowAction('edit');
+    $this->addRowAction('delete');
 
-        return parent::renderList();
-    }
+    return parent::renderList();
+}
 
 
     public function renderForm()
@@ -150,20 +142,6 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                     'name' => 'mobile_video',
                     'lang' => true,
                     'desc' => $this->l('Provide full URL or path to the mobile version (e.g. /videos/video-mobile.mp4). If only a filename is provided, it will be loaded from the module videos directory.'),
-                ],
-                [
-                    'type' => 'text',
-                    'label' => $this->l('Desktop poster path or URL'),
-                    'name' => 'desktop_poster',
-                    'lang' => true,
-                    'desc' => $this->l('Optional: image shown before playback on desktop. If only a filename is provided, it will be loaded from the module videos directory.'),
-                ],
-                [
-                    'type' => 'text',
-                    'label' => $this->l('Mobile poster path or URL'),
-                    'name' => 'mobile_poster',
-                    'lang' => true,
-                    'desc' => $this->l('Optional: image shown before playback on mobile. If only a filename is provided, it will be loaded from the module videos directory.'),
                 ],
                 [
                     'type' => 'text',
@@ -261,8 +239,6 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         $filenames = array_unique(array_filter([
             $this->getExistingVideoValue($slide->desktop_video),
             $this->getExistingVideoValue($slide->mobile_video),
-            $this->getExistingVideoValue($slide->desktop_poster),
-            $this->getExistingVideoValue($slide->mobile_poster),
         ]));
 
         foreach ($filenames as $filename) {
