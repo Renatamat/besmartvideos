@@ -12,7 +12,9 @@
               playsinline
               preload="metadata"
               data-desktop-src="{$slide.desktop_video_src|escape:'url'}"
-              data-mobile-src="{$slide.mobile_video_src|escape:'url'}">
+              data-mobile-src="{$slide.mobile_video_src|escape:'url'}"
+              data-desktop-poster="{$slide.desktop_poster_src|escape:'url'}"
+              data-mobile-poster="{$slide.mobile_poster_src|escape:'url'}">
             </video>
           </div>
           {if $slide.button_label && $slide.button_url}
