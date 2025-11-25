@@ -271,21 +271,30 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
             return null;
         }
 
-        $uploader = new Upload($fieldName);
-        $uploader->setSavePath(_PS_MODULE_DIR_ . 'besmartvideoslider/videos/');
-        $uploader->setAcceptTypes(['mp4', 'MP4']);
-        $uploader->file_overwrite = false;
-        $uploader->unique = true;
+        $fileInfo = $_FILES[$fieldName];
 
-        $filename = sprintf('%s_%s.mp4', $prefix, uniqid());
+        if (!isset($fileInfo['error']) || $fileInfo['error'] !== UPLOAD_ERR_OK) {
+            $this->errors[] = $this->l('Video upload failed.');
 
-        if (!$uploader->validate()) {
+            return null;
+        }
+
+        $extension = Tools::strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+        if ($extension !== 'mp4') {
             $this->errors[] = $this->l('Invalid video upload. Only MP4 files are allowed.');
 
             return null;
         }
 
-        if (!$uploader->upload($filename)) {
+        $saveDir = _PS_MODULE_DIR_ . 'besmartvideoslider/videos/';
+        if (!is_dir($saveDir)) {
+            @mkdir($saveDir, 0755, true);
+        }
+
+        $filename = sprintf('%s_%s.mp4', $prefix, uniqid());
+        $destination = $saveDir . $filename;
+
+        if (!move_uploaded_file($fileInfo['tmp_name'], $destination)) {
             $this->errors[] = $this->l('Video upload failed.');
 
             return null;
