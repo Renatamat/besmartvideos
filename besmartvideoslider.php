@@ -156,6 +156,12 @@ class Besmartvideoslider extends Module
         $idLang = (int) $this->context->language->id;
         $slides = BesmartVideoSlide::getActiveSlides($idLang);
 
+        foreach ($slides as &$slide) {
+            $slide['desktop_video_src'] = $this->resolveVideoPath($slide['desktop_video'] ?? '');
+            $slide['mobile_video_src'] = $this->resolveVideoPath($slide['mobile_video'] ?? '');
+        }
+        unset($slide);
+
         $this->context->smarty->assign([
             'besmartSliderSlides' => $slides,
             'besmartSliderModulePath' => $this->_path,
@@ -260,5 +266,18 @@ class Besmartvideoslider extends Module
         $link = Context::getContext()->link->getAdminLink('AdminBesmartVideoSlider');
 
         return $link;
+    }
+
+    private function resolveVideoPath(string $path): string
+    {
+        if ($path === '') {
+            return '';
+        }
+
+        if (preg_match('#^(https?:)?//#', $path) || strpos($path, '/') === 0) {
+            return $path;
+        }
+
+        return $this->_path . 'videos/' . ltrim($path, '/');
     }
 }

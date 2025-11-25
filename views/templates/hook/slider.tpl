@@ -11,8 +11,8 @@
               loop
               playsinline
               preload="metadata"
-              data-desktop-src="{$besmartSliderModulePath|escape:'htmlall':'UTF-8'}videos/{$slide.desktop_video|escape:'url'}"
-              data-mobile-src="{$besmartSliderModulePath|escape:'htmlall':'UTF-8'}videos/{$slide.mobile_video|escape:'url'}">
+              data-desktop-src="{$slide.desktop_video_src|escape:'url'}"
+              data-mobile-src="{$slide.mobile_video_src|escape:'url'}">
             </video>
           </div>
           {if $slide.button_label && $slide.button_url}
