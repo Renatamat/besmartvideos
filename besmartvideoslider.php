@@ -159,6 +159,8 @@ class Besmartvideoslider extends Module
         foreach ($slides as &$slide) {
             $slide['desktop_video_src'] = $this->resolveVideoPath($slide['desktop_video'] ?? '');
             $slide['mobile_video_src'] = $this->resolveVideoPath($slide['mobile_video'] ?? '');
+            $slide['desktop_poster_src'] = $this->resolvePosterPath($slide['desktop_video'] ?? '');
+            $slide['mobile_poster_src'] = $this->resolvePosterPath($slide['mobile_video'] ?? '');
         }
         unset($slide);
 
@@ -279,5 +281,21 @@ class Besmartvideoslider extends Module
         }
 
         return $this->_path . 'videos/' . ltrim($path, '/');
+    }
+
+    private function resolvePosterPath(string $videoPath): string
+    {
+        if ($videoPath === '') {
+            return '';
+        }
+
+        $resolvedVideoPath = $this->resolveVideoPath($videoPath);
+        $extensionPosition = strrpos($resolvedVideoPath, '.');
+
+        if ($extensionPosition === false) {
+            return $resolvedVideoPath . '.jpg';
+        }
+
+        return substr($resolvedVideoPath, 0, $extensionPosition) . '.jpg';
     }
 }
