@@ -133,14 +133,12 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                     'type' => 'file',
                     'label' => $this->l('Desktop video (mp4)'),
                     'name' => 'desktop_video',
-                    'lang' => true,
                     'desc' => $this->l('Upload MP4 file for desktop resolution.'),
                 ],
                 [
                     'type' => 'file',
                     'label' => $this->l('Mobile video (mp4)'),
                     'name' => 'mobile_video',
-                    'lang' => true,
                     'desc' => $this->l('Upload MP4 file for mobile resolution.'),
                 ],
                 [
@@ -248,27 +246,24 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         $slideId = (int) Tools::getValue($this->identifier);
         $existing = $slideId ? new BesmartVideoSlide($slideId) : null;
 
+        $desktopName = $this->uploadVideo('desktop_video', 'desktop');
+        $mobileName = $this->uploadVideo('mobile_video', 'mobile');
+
+        if (!$desktopName && $existing instanceof BesmartVideoSlide) {
+            $desktopName = $this->getExistingVideoValue($existing->desktop_video);
+        }
+        if (!$mobileName && $existing instanceof BesmartVideoSlide) {
+            $mobileName = $this->getExistingVideoValue($existing->mobile_video);
+        }
+
         foreach ($languages as $lang) {
             $langId = (int) $lang['id_lang'];
-            $desktopField = 'desktop_video_' . $langId;
-            $mobileField = 'mobile_video_' . $langId;
-
-            $desktopName = $this->uploadVideo($desktopField, 'desktop', $langId);
-            $mobileName = $this->uploadVideo($mobileField, 'mobile', $langId);
-
-            if (!$desktopName && $existing instanceof BesmartVideoSlide) {
-                $desktopName = $existing->desktop_video[$langId] ?? '';
-            }
-            if (!$mobileName && $existing instanceof BesmartVideoSlide) {
-                $mobileName = $existing->mobile_video[$langId] ?? '';
-            }
-
-            $_POST[$desktopField] = $desktopName;
-            $_POST[$mobileField] = $mobileName;
+            $_POST['desktop_video_' . $langId] = $desktopName;
+            $_POST['mobile_video_' . $langId] = $mobileName;
         }
     }
 
-    private function uploadVideo(string $fieldName, string $prefix, int $langId): ?string
+    private function uploadVideo(string $fieldName, string $prefix): ?string
     {
         if (empty($_FILES[$fieldName]['tmp_name'])) {
             return null;
@@ -280,7 +275,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         $uploader->file_overwrite = false;
         $uploader->unique = true;
 
-        $filename = sprintf('%s_%d_%s.mp4', $prefix, $langId, uniqid());
+        $filename = sprintf('%s_%s.mp4', $prefix, uniqid());
 
         if (!$uploader->validate()) {
             $this->errors[] = $this->l('Invalid video upload. Only MP4 files are allowed.');
@@ -297,6 +292,26 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         return $filename;
     }
 
+    private function getExistingVideoValue($videoField): string
+    {
+        if (is_array($videoField)) {
+            $defaultLang = (int) Configuration::get('PS_LANG_DEFAULT');
+            if (!empty($videoField[$defaultLang])) {
+                return (string) $videoField[$defaultLang];
+            }
+
+            foreach ($videoField as $value) {
+                if (!empty($value)) {
+                    return (string) $value;
+                }
+            }
+        } elseif (is_string($videoField)) {
+            return $videoField;
+        }
+
+        return '';
+    }
+
     private function deleteSlideFiles(int $idSlide): void
     {
         if (!$idSlide) {
@@ -308,11 +323,13 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
             return;
         }
 
-        $languages = Language::getLanguages(false);
-        foreach ($languages as $lang) {
-            $langId = (int) $lang['id_lang'];
-            $this->deleteFileIfExists($slide->desktop_video[$langId] ?? '');
-            $this->deleteFileIfExists($slide->mobile_video[$langId] ?? '');
+        $filenames = array_unique(array_filter([
+            $this->getExistingVideoValue($slide->desktop_video),
+            $this->getExistingVideoValue($slide->mobile_video),
+        ]));
+
+        foreach ($filenames as $filename) {
+            $this->deleteFileIfExists($filename);
         }
     }
 
