@@ -7,9 +7,12 @@
     }
 
     const targetSrc = mobileQuery.matches ? video.dataset.mobileSrc : video.dataset.desktopSrc;
+    const targetPoster = mobileQuery.matches ? video.dataset.mobilePoster : video.dataset.desktopPoster;
 
     if (video.dataset.currentSrc === targetSrc) {
-      return;
+      if (video.dataset.currentPoster === targetPoster) {
+        return;
+      }
     }
 
     video.pause();
@@ -18,6 +21,14 @@
       video.load();
     }
     video.dataset.currentSrc = targetSrc || '';
+
+    if (targetPoster) {
+      video.setAttribute('poster', targetPoster);
+    } else {
+      video.removeAttribute('poster');
+    }
+
+    video.dataset.currentPoster = targetPoster || '';
   }
 
   function playVideo(video) {
@@ -62,6 +73,10 @@
 
       const swiper = new Swiper(swiperElement, {
         loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
         pagination: {
           el: container.querySelector('.swiper-pagination'),
           clickable: true,

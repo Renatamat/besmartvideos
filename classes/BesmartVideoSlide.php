@@ -24,6 +24,12 @@ class BesmartVideoSlide extends ObjectModel
     public $mobile_video;
 
     /** @var string[] */
+    public $desktop_poster;
+
+    /** @var string[] */
+    public $mobile_poster;
+
+    /** @var string[] */
     public $button_label;
 
     /** @var string[] */
@@ -46,6 +52,8 @@ class BesmartVideoSlide extends ObjectModel
             'date_upd' => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
             'desktop_video' => ['type' => self::TYPE_STRING, 'lang' => true, 'required' => true, 'validate' => 'isCleanHtml'],
             'mobile_video' => ['type' => self::TYPE_STRING, 'lang' => true, 'required' => true, 'validate' => 'isCleanHtml'],
+            'desktop_poster' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isCleanHtml'],
+            'mobile_poster' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isCleanHtml'],
             'button_label' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isCleanHtml'],
             'button_url' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isUrl'],
         ],
@@ -64,7 +72,7 @@ class BesmartVideoSlide extends ObjectModel
     public static function getActiveSlides(int $idLang): array
     {
         $sql = new DbQuery();
-        $sql->select('s.`id_slide`, s.`position`, sl.`desktop_video`, sl.`mobile_video`, sl.`button_label`, sl.`button_url`');
+        $sql->select('s.`id_slide`, s.`position`, sl.`desktop_video`, sl.`mobile_video`, sl.`desktop_poster`, sl.`mobile_poster`, sl.`button_label`, sl.`button_url`');
         $sql->from(self::$definition['table'], 's');
         $sql->leftJoin(self::$definition['table'] . '_lang', 'sl', 's.`id_slide` = sl.`id_slide` AND sl.`id_lang` = ' . (int) $idLang);
         $sql->where('s.`active` = 1');

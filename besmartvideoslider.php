@@ -26,6 +26,8 @@ class Besmartvideoslider extends Module
 
         $this->displayName = $this->l('BeSmart Video Slider');
         $this->description = $this->l('Responsive video slider compatible with Swiper.');
+
+        $this->ensurePosterColumns();
     }
 
     public function install()
@@ -154,11 +156,14 @@ class Besmartvideoslider extends Module
         }
 
         $idLang = (int) $this->context->language->id;
+        $this->ensurePosterColumns();
         $slides = BesmartVideoSlide::getActiveSlides($idLang);
 
         foreach ($slides as &$slide) {
-            $slide['desktop_video_src'] = $this->resolveVideoPath($slide['desktop_video'] ?? '');
-            $slide['mobile_video_src'] = $this->resolveVideoPath($slide['mobile_video'] ?? '');
+            $slide['desktop_video_src'] = $this->resolveMediaPath($slide['desktop_video'] ?? '');
+            $slide['mobile_video_src'] = $this->resolveMediaPath($slide['mobile_video'] ?? '');
+            $slide['desktop_poster_src'] = $this->resolveMediaPath($slide['desktop_poster'] ?? '');
+            $slide['mobile_poster_src'] = $this->resolveMediaPath($slide['mobile_poster'] ?? '');
         }
         unset($slide);
 
@@ -188,6 +193,8 @@ class Besmartvideoslider extends Module
             `id_lang` INT UNSIGNED NOT NULL,
             `desktop_video` VARCHAR(255) NOT NULL,
             `mobile_video` VARCHAR(255) NOT NULL,
+            `desktop_poster` VARCHAR(255) NOT NULL DEFAULT '',
+            `mobile_poster` VARCHAR(255) NOT NULL DEFAULT '',
             `button_label` VARCHAR(255) NOT NULL,
             `button_url` VARCHAR(255) NOT NULL,
             PRIMARY KEY (`id_slide`, `id_lang`)
@@ -270,6 +277,11 @@ class Besmartvideoslider extends Module
 
     private function resolveVideoPath(string $path): string
     {
+        return $this->resolveMediaPath($path);
+    }
+
+    private function resolveMediaPath(string $path): string
+    {
         if ($path === '') {
             return '';
         }
@@ -279,5 +291,26 @@ class Besmartvideoslider extends Module
         }
 
         return $this->_path . 'videos/' . ltrim($path, '/');
+    }
+
+    public function ensurePosterColumns(): void
+    {
+        $langTable = _DB_PREFIX_ . 'besmartvideoslider_slides_lang';
+        $db = Db::getInstance();
+
+        $tableExists = $db->executeS('SHOW TABLES LIKE \'' . pSQL($langTable) . '\'');
+        if (!$tableExists) {
+            return;
+        }
+
+        $columns = $db->executeS('SHOW COLUMNS FROM `' . bqSQL($langTable) . '` LIKE "desktop_poster"');
+        if (!$columns) {
+            $db->execute('ALTER TABLE `' . bqSQL($langTable) . '` ADD COLUMN `desktop_poster` VARCHAR(255) NOT NULL DEFAULT "" AFTER `mobile_video`');
+        }
+
+        $columns = $db->executeS('SHOW COLUMNS FROM `' . bqSQL($langTable) . '` LIKE "mobile_poster"');
+        if (!$columns) {
+            $db->execute('ALTER TABLE `' . bqSQL($langTable) . '` ADD COLUMN `mobile_poster` VARCHAR(255) NOT NULL DEFAULT "" AFTER `desktop_poster`');
+        }
     }
 }
