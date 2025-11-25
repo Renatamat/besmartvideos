@@ -7,14 +7,13 @@
           <div class="besmartvideoslider__video-wrapper">
             <video class="besmartvideoslider__video"
               muted
-              autoplay
               loop
               playsinline
-              preload="metadata"
+              preload="none"
               data-desktop-src="{$slide.desktop_video_src}"
               data-mobile-src="{$slide.mobile_video_src}"
-              data-desktop-poster="{$slide.desktop_video_src|replace:'.mp4':'.jpg'}"
-              data-mobile-poster="{$slide.mobile_video-src|replace:'.mp4':'.jpg'}"
+              data-desktop-poster="{$slide.desktop_poster_src}"
+              data-mobile-poster="{$slide.mobile_poster_src}"
             >
             </video>
           </div>
