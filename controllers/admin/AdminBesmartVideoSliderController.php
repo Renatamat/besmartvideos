@@ -8,6 +8,8 @@ if (!defined('_PS_VERSION_')) {
 }
 require_once _PS_MODULE_DIR_ . 'besmartvideoslider/classes/BesmartVideoSlide.php';
 
+use PrestaShop\PrestaShop\Adapter\Entity\Upload;
+
 
 class AdminBesmartVideoSliderController extends ModuleAdminController
 {
