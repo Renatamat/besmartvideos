@@ -12,13 +12,16 @@
               playsinline
               preload="metadata"
               data-desktop-src="{$slide.desktop_video_src}"
-              data-mobile-src="{$slide.mobile_video_src}">
+              data-mobile-src="{$slide.mobile_video_src}"
+              data-desktop-poster="{$slide.desktop_video_src|replace:'.mp4':'.jpg'}"
+              data-mobile-poster="{$slide.mobile_video-src|replace:'.mp4':'.jpg'}"
+            >
             </video>
           </div>
           {if $slide.button_label && $slide.button_url}
-            <div class="besmartvideoslider__cta">
-              <a class="besmartvideoslider__btn" href="{$slide.button_url|escape:'html':'UTF-8'}">
-                {$slide.button_label|escape:'html':'UTF-8'}
+            <div class="video-overlay besmartvideoslider__cta d-md-none">
+              <a class="besmartvideoslider__btn iqit-show-all btn btn-link" href="{$slide.button_url|escape:'html':'UTF-8'}">
+                  <span class="icon-grid fs-24"></span> {$slide.button_label|escape:'html':'UTF-8'}
               </a>
             </div>
           {/if}
@@ -26,8 +29,6 @@
       {/foreach}
     </div>
     <div class="swiper-pagination"></div>
-    <div class="swiper-button-prev"></div>
-    <div class="swiper-button-next"></div>
   </div>
 </div>
 {/if}

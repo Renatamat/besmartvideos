@@ -6,8 +6,14 @@
 .besmartvideoslider__video-wrapper {
   position: relative;
   width: 100%;
-  padding-top: 56.25%;
+  padding-top: 78.125%;
   background: #000;
+}
+
+@media (max-width: 767px) {
+  .besmartvideoslider__video-wrapper {
+    padding-top: 154.87%;
+  }
 }
 
 .besmartvideoslider__video {
@@ -39,4 +45,30 @@
 .besmartvideoslider__btn:focus {
   background: rgba(0, 0, 0, 0.9);
   color: #fff;
+}
+.besmartvideoslider__cta {
+    background: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .iqit-show-all {
+        text-decoration: none;
+        border-radius: var(--Radius-round, 1000px);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        color: black;
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
+        transition: all 0.3s ease-in-out;
+        padding: 1rem  2rem;
+    }
+    @media (max-width: 568px) {
+        .iqit-show-all {
+            padding: 0.5rem  1rem;
+        }
+    }
+    .iqit-show-all:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
 }
