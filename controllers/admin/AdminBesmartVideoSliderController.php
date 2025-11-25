@@ -8,8 +8,6 @@ if (!defined('_PS_VERSION_')) {
 }
 require_once _PS_MODULE_DIR_ . 'besmartvideoslider/classes/BesmartVideoSlide.php';
 
-use PrestaShop\PrestaShop\Adapter\Entity\Upload;
-
 
 class AdminBesmartVideoSliderController extends ModuleAdminController
 {
@@ -132,16 +130,18 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                     ],
                 ],
                 [
-                    'type' => 'file',
-                    'label' => $this->l('Desktop video (mp4)'),
+                    'type' => 'text',
+                    'label' => $this->l('Desktop video path or URL'),
                     'name' => 'desktop_video',
-                    'desc' => $this->l('Upload MP4 file for desktop resolution.'),
+                    'lang' => true,
+                    'desc' => $this->l('Provide full URL or path to the desktop version (e.g. /videos/video.mp4). If only a filename is provided, it will be loaded from the module videos directory.'),
                 ],
                 [
-                    'type' => 'file',
-                    'label' => $this->l('Mobile video (mp4)'),
+                    'type' => 'text',
+                    'label' => $this->l('Mobile video path or URL'),
                     'name' => 'mobile_video',
-                    'desc' => $this->l('Upload MP4 file for mobile resolution.'),
+                    'lang' => true,
+                    'desc' => $this->l('Provide full URL or path to the mobile version (e.g. /videos/video-mobile.mp4). If only a filename is provided, it will be loaded from the module videos directory.'),
                 ],
                 [
                     'type' => 'text',
@@ -164,43 +164,6 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
 
         return parent::renderForm();
     }
-
-    public function postProcess()
-    {
-        // Obsłuż upload _zanim_ Presta zacznie robić processSave()
-        if (Tools::isSubmit('submitAdd' . $this->table)
-            || Tools::isSubmit('submitAdd' . $this->table . 'AndStay')) {
-            $this->handleUploads();
-        }
-
-        return parent::postProcess();
-    }
-
-
-//    public function processSave()
-// {
-//     // Upewniamy się, że obiekt jest załadowany / utworzony
-//     if (!is_object($this->object)) {
-//         $this->object = $this->loadObject(true);
-//     }
-//
-//     if (!$this->object) {
-//         // coś poszło nie tak – nie próbujemy dalej, żeby nie wywalić błędu
-//         return false;
-//     }
-//
-//     // Przepisanie danych z POST do obiektu (tutaj właśnie wcześniej leciał błąd)
-//     $this->copyFromPost($this->object, $this->table);
-//
-//     // Ustaw pozycję tylko dla NOWEGO slajdu
-//     if (!(int) $this->object->id) {
-//         $this->object->position = BesmartVideoSlide::getMaxPosition() + 1;
-//     }
-//
-//     // parent::processSave() zajmuje się resztą (walidacja, zapisy, asocjacje itd.)
-//     return parent::processSave();
-// }
-
 
     public function ajaxProcessUpdatePositions()
     {
@@ -240,67 +203,6 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         BesmartVideoSlide::cleanPositions();
 
         return $result;
-    }
-
-    private function handleUploads(): void
-    {
-        $languages = Language::getLanguages(false);
-        $slideId = (int) Tools::getValue($this->identifier);
-        $existing = $slideId ? new BesmartVideoSlide($slideId) : null;
-
-        $desktopName = $this->uploadVideo('desktop_video', 'desktop');
-        $mobileName = $this->uploadVideo('mobile_video', 'mobile');
-
-        if (!$desktopName && $existing instanceof BesmartVideoSlide) {
-            $desktopName = $this->getExistingVideoValue($existing->desktop_video);
-        }
-        if (!$mobileName && $existing instanceof BesmartVideoSlide) {
-            $mobileName = $this->getExistingVideoValue($existing->mobile_video);
-        }
-
-        foreach ($languages as $lang) {
-            $langId = (int) $lang['id_lang'];
-            $_POST['desktop_video_' . $langId] = $desktopName;
-            $_POST['mobile_video_' . $langId] = $mobileName;
-        }
-    }
-
-    private function uploadVideo(string $fieldName, string $prefix): ?string
-    {
-        if (empty($_FILES[$fieldName]['tmp_name'])) {
-            return null;
-        }
-
-        $fileInfo = $_FILES[$fieldName];
-
-        if (!isset($fileInfo['error']) || $fileInfo['error'] !== UPLOAD_ERR_OK) {
-            $this->errors[] = $this->l('Video upload failed.');
-
-            return null;
-        }
-
-        $extension = Tools::strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
-        if ($extension !== 'mp4') {
-            $this->errors[] = $this->l('Invalid video upload. Only MP4 files are allowed.');
-
-            return null;
-        }
-
-        $saveDir = _PS_MODULE_DIR_ . 'besmartvideoslider/videos/';
-        if (!is_dir($saveDir)) {
-            @mkdir($saveDir, 0755, true);
-        }
-
-        $filename = sprintf('%s_%s.mp4', $prefix, uniqid());
-        $destination = $saveDir . $filename;
-
-        if (!move_uploaded_file($fileInfo['tmp_name'], $destination)) {
-            $this->errors[] = $this->l('Video upload failed.');
-
-            return null;
-        }
-
-        return $filename;
     }
 
     private function getExistingVideoValue($videoField): string
@@ -346,9 +248,26 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
 
     private function deleteFileIfExists(string $filename): void
     {
+        if (!$this->isLocalModuleVideo($filename)) {
+            return;
+        }
+
         $path = _PS_MODULE_DIR_ . 'besmartvideoslider/videos/' . $filename;
         if ($filename && file_exists($path)) {
             @unlink($path);
         }
+    }
+
+    private function isLocalModuleVideo(string $path): bool
+    {
+        if ($path === '') {
+            return false;
+        }
+
+        if (preg_match('#^(https?:)?//#', $path)) {
+            return false;
+        }
+
+        return strpos($path, '/') === false;
     }
 }
