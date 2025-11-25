@@ -6,8 +6,14 @@
 .besmartvideoslider__video-wrapper {
   position: relative;
   width: 100%;
-  padding-top: 56.25%;
+  padding-top: 78.125%;
   background: #000;
+}
+
+@media (max-width: 767px) {
+  .besmartvideoslider__video-wrapper {
+    padding-top: 154.87%;
+  }
 }
 
 .besmartvideoslider__video {
