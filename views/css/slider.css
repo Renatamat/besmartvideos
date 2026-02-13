@@ -40,29 +40,71 @@
   height: 100%;
   object-fit: cover;
 }
+.besmartvideoslider--large .besmartvideoslider__video-wrapper {
+  padding-top: 0;
+}
 
-.besmartvideoslider__bottom-overlay {
+.besmartvideoslider--large .besmartvideoslider__video {
+  position: relative;
+  display: block;
+  height: auto;
+  object-fit: contain;
+}
+
+.pscat-overlay.besmartvideoslider__bottom-overlay{
   position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0rem;
+  left: 0;
+  right: 0;
   z-index: 15;
-  width: min(90%, 680px);
-  padding: 1rem;
+  width: 100%;
+  padding: 1rem 1rem 4rem;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
+  background: transparent;
+  backdrop-filter: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 2rem;
   text-align: center;
 }
 
 .besmartvideoslider__description {
-  color: #fff;
+    color: var(--Text-on-hoover, #FFF);
+    text-align: center;
+    font-family: "Bricolage Grotesque";
+    font-size: 1.25rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 100%;
+    letter-spacing: 16px;
+    text-transform: uppercase;
+    padding-bottom: 4rem;
 }
-
+.besmartvideoslider__description.description-with-button{
+    color: #fff;
+    text-align: center;
+    font-size: 2rem;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 125%; /* 125% */
+    letter-spacing: 22px;
+    padding-bottom: 0;
+}
+@media(max-width: 520px){
+    .pscat-overlay.besmartvideoslider__bottom-overlay{
+        gap: 1rem;
+        padding: 1rem 1rem 1.5rem;
+    }
+    .besmartvideoslider__description {
+        padding-bottom: 0rem;
+          letter-spacing: 0.8rem;
+    }
+    .besmartvideoslider__description.description-with-button{
+        letter-spacing: 0.8rem;
+        font-size: 1rem;
+    }
+}
 .besmartvideoslider__description p:last-child {
   margin-bottom: 0;
 }
@@ -79,12 +121,10 @@
   padding: 0.8rem 1.6rem;
 }
 
-.besmartvideoslider__action:hover,
-.besmartvideoslider__action:focus {
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
-}
 
+.pscat-overlay .iqit-show-all:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
 @media (max-width: 568px) {
   .besmartvideoslider__bottom-overlay {
     width: calc(100% - 2rem);
@@ -103,4 +143,9 @@
   display: block;
   text-decoration: none;
   cursor: pointer;
+}
+
+
+.besmartvideoslider .swiper-pagination.swiper-pagination-clickable.swiper-pagination-bullets.swiper-pagination-horizontal{
+    bottom: 0;
 }

@@ -4,6 +4,7 @@
     <div class="swiper-wrapper">
       {foreach from=$besmartSliderSlides item=slide}
         <div class="swiper-slide" data-slide-index="{$slide.id_slide|intval}">
+         <div class="position-relative">
           <div class="besmartvideoslider__video-wrapper">
             <video class="besmartvideoslider__video"
               muted
@@ -29,7 +30,9 @@
           {if $slide.description || ($slide.button_label && $slide.button_url)}
             <div class="pscat-overlay besmartvideoslider__bottom-overlay">
               {if $slide.description}
-                <div class="pscat-meta like-h3 besmartvideoslider__description">{$slide.description nofilter}</div>
+                <div class="pscat-meta besmartvideoslider__description 
+                     {if $slide.button_label && $slide.button_url} description-with-button {/if}
+                     ">{$slide.description nofilter}</div>
               {/if}
 
               {if $slide.button_label && $slide.button_url}
@@ -39,6 +42,7 @@
               {/if}
             </div>
           {/if}
+        </div>
         </div>
       {/foreach}
     </div>
