@@ -6,14 +6,22 @@ if (!defined('_PS_VERSION_')) {
 
 function upgrade_module_1_1_0($module)
 {
-    $sql = 'ALTER TABLE `' . _DB_PREFIX_ . 'besmartvideoslider_slides`
-        ADD COLUMN IF NOT EXISTS `placement` VARCHAR(32) NOT NULL DEFAULT "small_sequence" AFTER `position`';
+    $table = _DB_PREFIX_ . 'besmartvideoslider_slides';
 
-    if (!Db::getInstance()->execute($sql)) {
-        return false;
+    $columnExists = (bool) Db::getInstance()->getValue(
+        'SHOW COLUMNS FROM `' . pSQL($table) . '` LIKE "placement"'
+    );
+
+    if (!$columnExists) {
+        $sql = 'ALTER TABLE `' . pSQL($table) . '`
+            ADD COLUMN `placement` VARCHAR(32) NOT NULL DEFAULT "small_sequence" AFTER `position`';
+
+        if (!Db::getInstance()->execute($sql)) {
+            return false;
+        }
     }
 
-    $updateSql = 'UPDATE `' . _DB_PREFIX_ . 'besmartvideoslider_slides`
+    $updateSql = 'UPDATE `' . pSQL($table) . '`
         SET `placement` = "small_sequence"
         WHERE `placement` = "" OR `placement` IS NULL';
 
