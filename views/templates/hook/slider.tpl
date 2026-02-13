@@ -1,5 +1,5 @@
 {if isset($besmartSliderSlides) && $besmartSliderSlides|@count > 0}
-<div class="besmartvideoslider" data-module-path="{$besmartSliderModulePath|escape:'htmlall':'UTF-8'}">
+<div class="besmartvideoslider besmartvideoslider--{$besmartSliderVariant|default:'small'|escape:'html':'UTF-8'}" data-module-path="{$besmartSliderModulePath|escape:'htmlall':'UTF-8'}" data-placement="{$besmartSliderPlacement|escape:'html':'UTF-8'}">
   <div class="swiper besmartvideoslider__swiper js-besmartvideoslider-swiper">
     <div class="swiper-wrapper">
       {foreach from=$besmartSliderSlides item=slide}
@@ -17,7 +17,7 @@
             >
             </video>
 
-            {if $slide.button_label && $slide.button_url}
+            {if !$slide.description && $slide.button_label && $slide.button_url}
               <a
                 href="{$slide.button_url|escape:'html':'UTF-8'}"
                 class="besmartvideoslider__desktop-link d-none d-md-block"
@@ -26,11 +26,17 @@
             {/if}
           </div>
 
-          {if $slide.button_label && $slide.button_url}
-            <div class="video-overlay besmartvideoslider__cta d-md-none">
-              <a class="besmartvideoslider__btn iqit-show-all btn btn-link" href="{$slide.button_url|escape:'html':'UTF-8'}">
+          {if $slide.description || ($slide.button_label && $slide.button_url)}
+            <div class="pscat-overlay besmartvideoslider__bottom-overlay">
+              {if $slide.description}
+                <div class="pscat-meta like-h3 besmartvideoslider__description">{$slide.description nofilter}</div>
+              {/if}
+
+              {if $slide.button_label && $slide.button_url}
+                <a class="iqit-show-all btn btn-link besmartvideoslider__action" href="{$slide.button_url|escape:'html':'UTF-8'}">
                   <span class="icon-grid fs-24"></span> {$slide.button_label|escape:'html':'UTF-8'}
-              </a>
+                </a>
+              {/if}
             </div>
           {/if}
         </div>

@@ -11,6 +11,8 @@ require_once _PS_MODULE_DIR_ . 'besmartvideoslider/classes/BesmartVideoSlide.php
 
 class AdminBesmartVideoSliderController extends ModuleAdminController
 {
+    protected $placement = BesmartVideoSlide::PLACEMENT_SMALL;
+
     public function __construct()
     {
         $this->table = 'besmartvideoslider_slides';
@@ -22,6 +24,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         $this->position = true;
         $this->_defaultOrderBy = 'position';
         $this->_orderWay = 'ASC';
+        $this->_where = ' AND a.`placement` = "' . pSQL($this->placement) . '"';
 
         // Ensure module instance exists before using l() which requires $this->module->name
         if ($this->module === null) {
@@ -93,7 +96,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
 
    public function renderList()
 {
-    $this->_select = 'b.`button_label`, b.`desktop_video`, b.`mobile_video`';
+    $this->_select = 'b.`button_label`, b.`desktop_video`, b.`mobile_video`, b.`description`';
     $this->_group = '';
 
     $this->addRowAction('edit');
@@ -130,6 +133,10 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                     ],
                 ],
                 [
+                    'type' => 'hidden',
+                    'name' => 'placement',
+                ],
+                [
                     'type' => 'text',
                     'label' => $this->l('Desktop video path or URL'),
                     'name' => 'desktop_video',
@@ -142,6 +149,15 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                     'name' => 'mobile_video',
                     'lang' => true,
                     'desc' => $this->l('Provide full URL or path to the mobile version (e.g. /videos/video-mobile.mp4). If only a filename is provided, it will be loaded from the module videos directory.'),
+                ],
+                [
+                    'type' => 'textarea',
+                    'label' => $this->l('Description (HTML)'),
+                    'name' => 'description',
+                    'lang' => true,
+                    'autoload_rte' => false,
+                    'rows' => 6,
+                    'desc' => $this->l('Short HTML description displayed at the bottom of the slide.'),
                 ],
                 [
                     'type' => 'text',
@@ -165,6 +181,28 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         return parent::renderForm();
     }
 
+    public function getFieldsValue($obj)
+    {
+        $fieldsValue = parent::getFieldsValue($obj);
+        $fieldsValue['placement'] = $this->placement;
+
+        return $fieldsValue;
+    }
+
+    public function processAdd()
+    {
+        $_POST['placement'] = $this->placement;
+
+        return parent::processAdd();
+    }
+
+    public function processUpdate()
+    {
+        $_POST['placement'] = $this->placement;
+
+        return parent::processUpdate();
+    }
+
     public function ajaxProcessUpdatePositions()
     {
         $positions = Tools::getValue($this->table);
@@ -186,7 +224,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
     {
         $this->deleteSlideFiles((int) Tools::getValue($this->identifier));
         $result = parent::processDelete();
-        BesmartVideoSlide::cleanPositions();
+        BesmartVideoSlide::cleanPositions($this->placement);
 
         return $result;
     }
@@ -200,7 +238,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
             }
         }
         $result = parent::processBulkDelete();
-        BesmartVideoSlide::cleanPositions();
+        BesmartVideoSlide::cleanPositions($this->placement);
 
         return $result;
     }
