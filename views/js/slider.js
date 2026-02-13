@@ -31,6 +31,9 @@
       return;
     }
 
+    // na wszelki wypadek wyłącz pętlę, żeby 'ended' w ogóle się wywołał
+    video.removeAttribute('loop');
+
     video.pause();
     video.src = targetSrc;
     video.load();
@@ -53,6 +56,8 @@
   function pauseVideos(container) {
     container.querySelectorAll('video').forEach(function (video) {
       video.pause();
+      // wyczyść poprzednie nasłuchiwanie końca filmu
+      video.onended = null;
     });
   }
 
@@ -71,6 +76,8 @@
         return;
       }
 
+      let swiper; // potrzebne, żeby użyć w listenerze 'ended'
+
       const updatePosters = function () {
         swiperElement.querySelectorAll('video').forEach(function (video) {
           setVideoPoster(video);
@@ -78,18 +85,34 @@
       };
 
       const prepareActiveVideo = function () {
+        // zatrzymaj wszystkie filmy i usuń nasłuchiwacze
         pauseVideos(swiperElement);
+
+        // znajdź video w aktualnie aktywnym slajdzie
         const activeVideo = swiperElement.querySelector('.swiper-slide-active video');
+        if (!activeVideo) {
+          return;
+        }
+
+        // ustaw źródło
         setVideoSource(activeVideo);
+
+        // ustaw reakcję na koniec filmu – PRZEŁĄCZ SLIDE
+        activeVideo.onended = function () {
+          if (swiper && !swiper.destroyed) {
+            swiper.slideNext();
+          }
+        };
+
+        // odtwórz
         playVideo(activeVideo);
       };
 
-      const swiper = new Swiper(swiperElement, {
+      swiper = new Swiper(swiperElement, {
         loop: true,
-        autoplay: {
-          delay: 5000,
-          disableOnInteraction: false,
-        },
+        // USUWAMY autoplay oparty na czasie
+        // autoplay: { ... }
+
         pagination: {
           el: container.querySelector('.swiper-pagination'),
           clickable: true,
@@ -101,30 +124,22 @@
         on: {
           init: function () {
             updatePosters();
-            if (swiper.autoplay && typeof swiper.autoplay.stop === 'function') {
-              swiper.autoplay.stop();
-            }
-          },
-          slideChange: function () {
             prepareActiveVideo();
           },
+          // po zakończeniu animacji zmiany slajdu przygotuj nowe video
+          slideChangeTransitionEnd: function () {
+            prepareActiveVideo();
+          }
         },
       });
 
       const refreshWithDebounce = debounce(function () {
         updatePosters();
         prepareActiveVideo();
-      }, 200);
+      }, 100);
 
       mobileQuery.addEventListener('change', refreshWithDebounce);
       window.addEventListener('resize', refreshWithDebounce);
-
-      window.addEventListener('load', function () {
-        prepareActiveVideo();
-        if (swiper.autoplay && typeof swiper.autoplay.start === 'function') {
-          swiper.autoplay.start();
-        }
-      });
     });
   });
 })();

@@ -1,6 +1,9 @@
 .besmartvideoslider {
   position: relative;
   overflow: hidden;
+  @media(min-width: 768px){
+    padding: 2px;  
+  }
 }
 
 .besmartvideoslider__video-wrapper {
@@ -27,9 +30,10 @@
 
 .besmartvideoslider__cta {
   position: absolute;
-  bottom: 2rem;
-  left: 2rem;
+  bottom: 3rem;
   z-index: 5;
+  width: 100%;
+  padding: 0 1rem;
 }
 
 .besmartvideoslider__btn {
@@ -71,4 +75,13 @@
     .iqit-show-all:hover {
         background: rgba(0, 0, 0, 0.3);
     }
+}
+.besmartvideoslider__desktop-link {
+  position: absolute;
+  inset: 0;           /* top:0; right:0; bottom:0; left:0 */
+  z-index: 10;
+  display: block;
+  text-decoration: none;
+  /* jeśli chcesz efekt „rączki” */
+  cursor: pointer;
 }

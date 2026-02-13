@@ -16,7 +16,16 @@
               data-mobile-poster="{$slide.mobile_poster_src}"
             >
             </video>
+
+            {if $slide.button_label && $slide.button_url}
+              <a
+                href="{$slide.button_url|escape:'html':'UTF-8'}"
+                class="besmartvideoslider__desktop-link d-none d-md-block"
+                aria-label="{$slide.button_label|escape:'html':'UTF-8'}"
+              ></a>
+            {/if}
           </div>
+
           {if $slide.button_label && $slide.button_url}
             <div class="video-overlay besmartvideoslider__cta d-md-none">
               <a class="besmartvideoslider__btn iqit-show-all btn btn-link" href="{$slide.button_url|escape:'html':'UTF-8'}">
@@ -27,6 +36,7 @@
         </div>
       {/foreach}
     </div>
+
     <div class="swiper-pagination"></div>
   </div>
 </div>
