@@ -5,7 +5,7 @@
 Moduł obsługuje teraz 2 niezależne placementy:
 
 - `small_sequence` – dotychczasowa sekcja renderowana w hooku `displayHome`.
-- `large_sequence` – nowa większa sekcja renderowana w customowym hooku `displayBesmartVideosLarge`.
+- `large_sequence` – nowa większa sekcja renderowana w customowym hooku `displayBesmartVideosLarge` lub w `displayTopColumn`.
 
 ## Back Office
 
@@ -19,12 +19,14 @@ Każda zakładka zarządza własną listą video (kolejność, aktywność, edyc
 ## Integracja Front Office
 
 - Mała sekcja: pozostaje bez zmian (`hookDisplayHome`, tpl: `views/templates/hook/slider.tpl`).
-- Duża sekcja: custom hook `displayBesmartVideosLarge` (`hookDisplayBesmartVideosLarge`, tpl: `views/templates/hook/large.tpl`).
+- Duża sekcja: custom hook `displayBesmartVideosLarge` (`hookDisplayBesmartVideosLarge`) lub `displayTopColumn` (`hookDisplayTopColumn`), tpl: `views/templates/hook/large.tpl`.
 
 Aby wstawić duże wideo w wybranym miejscu motywu, dodaj w odpowiednim pliku Smarty:
 
 ```smarty
 {hook h='displayBesmartVideosLarge'}
+{* alternatywnie: *}
+{hook h='displayTopColumn'}
 ```
 
 ## Upgrade
@@ -33,5 +35,5 @@ Aktualizacja do wersji `1.1.0`:
 
 - dodaje kolumnę `placement` do tabeli slajdów,
 - ustawia istniejące rekordy jako `small_sequence`,
-- rejestruje customowy hook `displayBesmartVideosLarge`,
+- rejestruje hooki `displayBesmartVideosLarge` oraz `displayTopColumn`,
 - dodaje nową zakładkę BO dla dużych video.

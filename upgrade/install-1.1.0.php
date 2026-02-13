@@ -37,5 +37,9 @@ function upgrade_module_1_1_0($module)
         return false;
     }
 
+    if (!$module->registerHook('displayTopColumn')) {
+        return false;
+    }
+
     return $module->installTab();
 }

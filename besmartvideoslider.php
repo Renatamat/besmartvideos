@@ -33,6 +33,7 @@ class Besmartvideoslider extends Module
             && Configuration::updateValue('BESMARTVIDEOSLIDER_ENABLED', 1)
             && $this->registerHook('displayHome')
             && $this->registerHook('displayBesmartVideosLarge')
+            && $this->registerHook('displayTopColumn')
             && $this->registerHook('actionFrontControllerSetMedia')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->installTab()
@@ -160,6 +161,11 @@ class Besmartvideoslider extends Module
     }
 
     public function hookDisplayBesmartVideosLarge($params)
+    {
+        return $this->renderSlider(BesmartVideoSlide::PLACEMENT_LARGE, 'large', 'views/templates/hook/large.tpl');
+    }
+
+    public function hookDisplayTopColumn($params)
     {
         return $this->renderSlider(BesmartVideoSlide::PLACEMENT_LARGE, 'large', 'views/templates/hook/large.tpl');
     }
