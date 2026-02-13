@@ -11,6 +11,8 @@ require_once _PS_MODULE_DIR_ . 'besmartvideoslider/classes/BesmartVideoSlide.php
 
 class AdminBesmartVideoSliderController extends ModuleAdminController
 {
+    protected $placement = BesmartVideoSlide::PLACEMENT_SMALL;
+
     public function __construct()
     {
         $this->table = 'besmartvideoslider_slides';
@@ -22,6 +24,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         $this->position = true;
         $this->_defaultOrderBy = 'position';
         $this->_orderWay = 'ASC';
+        $this->_where = ' AND a.`placement` = "' . pSQL($this->placement) . '"';
 
         // Ensure module instance exists before using l() which requires $this->module->name
         if ($this->module === null) {
@@ -130,6 +133,10 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                     ],
                 ],
                 [
+                    'type' => 'hidden',
+                    'name' => 'placement',
+                ],
+                [
                     'type' => 'text',
                     'label' => $this->l('Desktop video path or URL'),
                     'name' => 'desktop_video',
@@ -165,6 +172,28 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
         return parent::renderForm();
     }
 
+    public function getFieldsValue($obj)
+    {
+        $fieldsValue = parent::getFieldsValue($obj);
+        $fieldsValue['placement'] = $this->placement;
+
+        return $fieldsValue;
+    }
+
+    public function processAdd()
+    {
+        $_POST['placement'] = $this->placement;
+
+        return parent::processAdd();
+    }
+
+    public function processUpdate()
+    {
+        $_POST['placement'] = $this->placement;
+
+        return parent::processUpdate();
+    }
+
     public function ajaxProcessUpdatePositions()
     {
         $positions = Tools::getValue($this->table);
@@ -186,7 +215,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
     {
         $this->deleteSlideFiles((int) Tools::getValue($this->identifier));
         $result = parent::processDelete();
-        BesmartVideoSlide::cleanPositions();
+        BesmartVideoSlide::cleanPositions($this->placement);
 
         return $result;
     }
@@ -200,7 +229,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
             }
         }
         $result = parent::processBulkDelete();
-        BesmartVideoSlide::cleanPositions();
+        BesmartVideoSlide::cleanPositions($this->placement);
 
         return $result;
     }
