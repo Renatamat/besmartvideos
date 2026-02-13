@@ -1,5 +1,5 @@
 {if isset($besmartSliderSlides) && $besmartSliderSlides|@count > 0}
-<div class="besmartvideoslider" data-module-path="{$besmartSliderModulePath|escape:'htmlall':'UTF-8'}">
+<div class="besmartvideoslider besmartvideoslider--{$besmartSliderVariant|default:'small'|escape:'html':'UTF-8'}" data-module-path="{$besmartSliderModulePath|escape:'htmlall':'UTF-8'}" data-placement="{$besmartSliderPlacement|escape:'html':'UTF-8'}">
   <div class="swiper besmartvideoslider__swiper js-besmartvideoslider-swiper">
     <div class="swiper-wrapper">
       {foreach from=$besmartSliderSlides item=slide}

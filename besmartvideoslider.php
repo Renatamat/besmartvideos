@@ -9,14 +9,13 @@ if (!defined('_PS_VERSION_')) {
 
 require_once _PS_MODULE_DIR_ . 'besmartvideoslider/classes/BesmartVideoSlide.php';
 
-
 class Besmartvideoslider extends Module
 {
     public function __construct()
     {
         $this->name = 'besmartvideoslider';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'BeSmart';
         $this->bootstrap = true;
         $this->need_instance = 0;
@@ -33,6 +32,8 @@ class Besmartvideoslider extends Module
         return parent::install()
             && Configuration::updateValue('BESMARTVIDEOSLIDER_ENABLED', 1)
             && $this->registerHook('displayHome')
+            && $this->registerHook('displayBesmartVideosLarge')
+            && $this->registerHook('displayTopColumn')
             && $this->registerHook('actionFrontControllerSetMedia')
             && $this->registerHook('actionAdminControllerSetMedia')
             && $this->installTab()
@@ -89,9 +90,15 @@ class Besmartvideoslider extends Module
                 'buttons' => [
                     [
                         'type' => 'link',
-                        'title' => $this->l('Manage slides'),
+                        'title' => $this->l('Manage videos (Small)'),
                         'icon' => 'process-icon-cogs',
-                        'href' => $this->getAdminLink(),
+                        'href' => $this->getAdminLink('AdminBesmartVideoSlider'),
+                    ],
+                    [
+                        'type' => 'link',
+                        'title' => $this->l('Manage videos (Large)'),
+                        'icon' => 'process-icon-cogs',
+                        'href' => $this->getAdminLink('AdminBesmartVideoSliderLarge'),
                     ],
                 ],
             ],
@@ -139,7 +146,8 @@ class Besmartvideoslider extends Module
 
     public function hookActionAdminControllerSetMedia()
     {
-        if (Tools::getValue('controller') !== 'AdminBesmartVideoSlider') {
+        $controller = Tools::getValue('controller');
+        if (!in_array($controller, ['AdminBesmartVideoSlider', 'AdminBesmartVideoSliderLarge'], true)) {
             return;
         }
 
@@ -149,12 +157,27 @@ class Besmartvideoslider extends Module
 
     public function hookDisplayHome($params)
     {
+        return $this->renderSlider(BesmartVideoSlide::PLACEMENT_SMALL, 'small', 'views/templates/hook/slider.tpl');
+    }
+
+    public function hookDisplayBesmartVideosLarge($params)
+    {
+        return $this->renderSlider(BesmartVideoSlide::PLACEMENT_LARGE, 'large', 'views/templates/hook/large.tpl');
+    }
+
+    public function hookDisplayTopColumn($params)
+    {
+        return $this->renderSlider(BesmartVideoSlide::PLACEMENT_LARGE, 'large', 'views/templates/hook/large.tpl');
+    }
+
+    private function renderSlider(string $placement, string $variant, string $template)
+    {
         if (!Configuration::get('BESMARTVIDEOSLIDER_ENABLED')) {
             return '';
         }
 
         $idLang = (int) $this->context->language->id;
-        $slides = BesmartVideoSlide::getActiveSlides($idLang);
+        $slides = BesmartVideoSlide::getActiveSlides($idLang, $placement);
 
         foreach ($slides as &$slide) {
             $slide['desktop_video_src'] = $this->resolveVideoPath($slide['desktop_video'] ?? '');
@@ -167,9 +190,11 @@ class Besmartvideoslider extends Module
         $this->context->smarty->assign([
             'besmartSliderSlides' => $slides,
             'besmartSliderModulePath' => $this->_path,
+            'besmartSliderPlacement' => $placement,
+            'besmartSliderVariant' => $variant,
         ]);
 
-        return $this->display(__FILE__, 'views/templates/hook/slider.tpl');
+        return $this->display(__FILE__, $template);
     }
 
     private function createTables()
@@ -180,6 +205,7 @@ class Besmartvideoslider extends Module
             `id_slide` INT UNSIGNED NOT NULL AUTO_INCREMENT,
             `active` TINYINT(1) NOT NULL DEFAULT 1,
             `position` INT UNSIGNED NOT NULL DEFAULT 0,
+            `placement` VARCHAR(32) NOT NULL DEFAULT "small_sequence",
             `date_add` DATETIME NOT NULL,
             `date_upd` DATETIME NOT NULL,
             PRIMARY KEY (`id_slide`)
@@ -231,21 +257,32 @@ class Besmartvideoslider extends Module
         return true;
     }
 
-    private function installTab(): bool
+    public function installTab(): bool
     {
+        return $this->createTab('AdminBesmartVideoSlider', $this->l('Videos (Small)'))
+            && $this->createTab('AdminBesmartVideoSliderLarge', $this->l('Videos (Large)'));
+    }
+
+    private function createTab(string $className, string $tabName): bool
+    {
+        $existingId = (int) Tab::getIdFromClassName($className);
+        if ($existingId) {
+            return true;
+        }
+
         $parentId = (int) Tab::getIdFromClassName('IMPROVE');
         if (!$parentId) {
             $parentId = (int) Tab::getIdFromClassName('AdminParentModulesSf');
         }
 
         $tab = new Tab();
-        $tab->class_name = 'AdminBesmartVideoSlider';
+        $tab->class_name = $className;
         $tab->id_parent = $parentId;
         $tab->module = $this->name;
         $tab->active = 1;
 
         foreach (Language::getLanguages(true) as $lang) {
-            $tab->name[$lang['id_lang']] = $this->l('Video Slider');
+            $tab->name[$lang['id_lang']] = $tabName;
         }
 
         return (bool) $tab->add();
@@ -253,21 +290,26 @@ class Besmartvideoslider extends Module
 
     private function uninstallTab(): bool
     {
-        $idTab = (int) Tab::getIdFromClassName('AdminBesmartVideoSlider');
-        if (!$idTab) {
-            return true;
+        $tabClassNames = ['AdminBesmartVideoSliderLarge', 'AdminBesmartVideoSlider'];
+
+        foreach ($tabClassNames as $className) {
+            $idTab = (int) Tab::getIdFromClassName($className);
+            if (!$idTab) {
+                continue;
+            }
+
+            $tab = new Tab($idTab);
+            if (!(bool) $tab->delete()) {
+                return false;
+            }
         }
 
-        $tab = new Tab($idTab);
-
-        return (bool) $tab->delete();
+        return true;
     }
 
-    private function getAdminLink()
+    private function getAdminLink(string $controller)
     {
-        $link = Context::getContext()->link->getAdminLink('AdminBesmartVideoSlider');
-
-        return $link;
+        return Context::getContext()->link->getAdminLink($controller);
     }
 
     private function resolveVideoPath(string $path): string
