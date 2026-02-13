@@ -8,11 +8,15 @@ function upgrade_module_1_1_0($module)
 {
     $table = _DB_PREFIX_ . 'besmartvideoslider_slides';
 
-    $columnExists = (bool) Db::getInstance()->getValue(
-        'SHOW COLUMNS FROM `' . pSQL($table) . '` LIKE "placement"'
+    $columnExists = (int) Db::getInstance()->getValue(
+        'SELECT COUNT(*)
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = "' . pSQL(_DB_NAME_) . '"
+        AND TABLE_NAME = "' . pSQL($table) . '"
+        AND COLUMN_NAME = "placement"'
     );
 
-    if (!$columnExists) {
+    if ($columnExists === 0) {
         $sql = 'ALTER TABLE `' . pSQL($table) . '`
             ADD COLUMN `placement` VARCHAR(32) NOT NULL DEFAULT "small_sequence" AFTER `position`';
 
