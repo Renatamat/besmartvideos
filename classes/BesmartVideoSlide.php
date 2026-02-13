@@ -7,9 +7,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-
 class BesmartVideoSlide extends ObjectModel
-
 {
     public const PLACEMENT_SMALL = 'small_sequence';
     public const PLACEMENT_LARGE = 'large_sequence';
@@ -28,6 +26,9 @@ class BesmartVideoSlide extends ObjectModel
 
     /** @var string[] */
     public $mobile_video;
+
+    /** @var string[] */
+    public $description;
 
     /** @var string[] */
     public $button_label;
@@ -53,6 +54,7 @@ class BesmartVideoSlide extends ObjectModel
             'date_upd' => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
             'desktop_video' => ['type' => self::TYPE_STRING, 'lang' => true, 'required' => true, 'validate' => 'isCleanHtml'],
             'mobile_video' => ['type' => self::TYPE_STRING, 'lang' => true, 'required' => true, 'validate' => 'isCleanHtml'],
+            'description' => ['type' => self::TYPE_HTML, 'lang' => true, 'validate' => 'isCleanHtml'],
             'button_label' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isCleanHtml'],
             'button_url' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isUrl'],
         ],
@@ -60,7 +62,6 @@ class BesmartVideoSlide extends ObjectModel
 
     public function add($autoDate = true, $nullValues = false)
     {
-        // jeśli pozycja nie jest ustawiona – nadaj kolejną
         if (!Validate::isUnsignedInt($this->position)) {
             $this->position = self::getMaxPosition($this->placement ?: self::PLACEMENT_SMALL) + 1;
         }
@@ -75,7 +76,7 @@ class BesmartVideoSlide extends ObjectModel
     public static function getActiveSlides(int $idLang, string $placement = self::PLACEMENT_SMALL): array
     {
         $sql = new DbQuery();
-        $sql->select('s.`id_slide`, s.`position`, sl.`desktop_video`, sl.`mobile_video`, sl.`button_label`, sl.`button_url`');
+        $sql->select('s.`id_slide`, s.`position`, sl.`desktop_video`, sl.`mobile_video`, sl.`description`, sl.`button_label`, sl.`button_url`');
         $sql->from(self::$definition['table'], 's');
         $sql->leftJoin(self::$definition['table'] . '_lang', 'sl', 's.`id_slide` = sl.`id_slide` AND sl.`id_lang` = ' . (int) $idLang);
         $sql->where('s.`active` = 1');

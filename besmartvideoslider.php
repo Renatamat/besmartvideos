@@ -15,7 +15,7 @@ class Besmartvideoslider extends Module
     {
         $this->name = 'besmartvideoslider';
         $this->tab = 'front_office_features';
-        $this->version = '1.1.0';
+        $this->version = '1.1.1';
         $this->author = 'BeSmart';
         $this->bootstrap = true;
         $this->need_instance = 0;
@@ -216,6 +216,7 @@ class Besmartvideoslider extends Module
             `id_lang` INT UNSIGNED NOT NULL,
             `desktop_video` VARCHAR(255) NOT NULL,
             `mobile_video` VARCHAR(255) NOT NULL,
+            `description` TEXT NULL,
             `button_label` VARCHAR(255) NOT NULL,
             `button_url` VARCHAR(255) NOT NULL,
             PRIMARY KEY (`id_slide`, `id_lang`)

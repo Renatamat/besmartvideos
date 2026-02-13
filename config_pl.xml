@@ -2,7 +2,7 @@
 <module>
     <name>besmartvideoslider</name>
     <displayName><![CDATA[BeSmart Video Slider]]></displayName>
-    <version><![CDATA[1.1.0]]></version>
+    <version><![CDATA[1.1.1]]></version>
     <description><![CDATA[Responsive video slider compatible with Swiper.]]></description>
     <author><![CDATA[BeSmart]]></author>
     <tab><![CDATA[front_office_features]]></tab>

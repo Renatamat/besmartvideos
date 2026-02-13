@@ -16,6 +16,8 @@ W BO są dostępne dwie osobne zakładki modułu:
 
 Każda zakładka zarządza własną listą video (kolejność, aktywność, edycja, usuwanie).
 
+Dla każdego slajdu można ustawić dodatkowo **Opis (HTML)** oraz przycisk (etykieta + URL), które wyświetlają się na dole slajdu.
+
 ## Integracja Front Office
 
 - Mała sekcja: pozostaje bez zmian (`hookDisplayHome`, tpl: `views/templates/hook/slider.tpl`).
@@ -37,3 +39,9 @@ Aktualizacja do wersji `1.1.0`:
 - ustawia istniejące rekordy jako `small_sequence`,
 - rejestruje hooki `displayBesmartVideosLarge` oraz `displayTopColumn`,
 - dodaje nową zakładkę BO dla dużych video.
+
+
+Aktualizacja do wersji `1.1.1`:
+
+- dodaje kolumnę `description` (TEXT) do tabeli `besmartvideoslider_slides_lang`,
+- umożliwia wyświetlanie opisu HTML pod video oraz przycisku pod opisem.

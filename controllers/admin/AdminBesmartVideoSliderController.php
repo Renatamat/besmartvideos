@@ -96,7 +96,7 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
 
    public function renderList()
 {
-    $this->_select = 'b.`button_label`, b.`desktop_video`, b.`mobile_video`';
+    $this->_select = 'b.`button_label`, b.`desktop_video`, b.`mobile_video`, b.`description`';
     $this->_group = '';
 
     $this->addRowAction('edit');
@@ -149,6 +149,15 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                     'name' => 'mobile_video',
                     'lang' => true,
                     'desc' => $this->l('Provide full URL or path to the mobile version (e.g. /videos/video-mobile.mp4). If only a filename is provided, it will be loaded from the module videos directory.'),
+                ],
+                [
+                    'type' => 'textarea',
+                    'label' => $this->l('Description (HTML)'),
+                    'name' => 'description',
+                    'lang' => true,
+                    'autoload_rte' => false,
+                    'rows' => 6,
+                    'desc' => $this->l('Short HTML description displayed at the bottom of the slide.'),
                 ],
                 [
                     'type' => 'text',
