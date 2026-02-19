@@ -1,6 +1,15 @@
 (function () {
   const mobileQuery = window.matchMedia('(max-width: 767px)');
 
+  function shouldAutoplay() {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const saveData = Boolean(connection && connection.saveData);
+    const slowNetwork = Boolean(connection && /(^|\b)(slow-2g|2g)($|\b)/.test(connection.effectiveType || ''));
+
+    return !reduceMotion && !saveData && !slowNetwork;
+  }
+
   function setVideoPoster(video) {
     if (!video) {
       return;
@@ -14,8 +23,6 @@
     } else {
       video.removeAttribute('poster');
     }
-
-    video.dataset.currentPoster = targetPoster || '';
 
     return targetSrc;
   }
@@ -31,13 +38,22 @@
       return;
     }
 
-    // na wszelki wypadek wyłącz pętlę, żeby 'ended' w ogóle się wywołał
     video.removeAttribute('loop');
-
     video.pause();
     video.src = targetSrc;
     video.load();
     video.dataset.currentSrc = targetSrc;
+  }
+
+  function clearVideoSource(video) {
+    if (!video || !video.dataset.currentSrc) {
+      return;
+    }
+
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.dataset.currentSrc = '';
   }
 
   function playVideo(video) {
@@ -56,7 +72,6 @@
   function pauseVideos(container) {
     container.querySelectorAll('video').forEach(function (video) {
       video.pause();
-      // wyczyść poprzednie nasłuchiwanie końca filmu
       video.onended = null;
     });
   }
@@ -69,77 +84,155 @@
     };
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.besmartvideoslider').forEach(function (container) {
-      const swiperElement = container.querySelector('.js-besmartvideoslider-swiper');
-      if (!swiperElement || typeof Swiper === 'undefined') {
+  function scheduleIdle(fn) {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(fn, { timeout: 1200 });
+      return;
+    }
+
+    setTimeout(fn, 250);
+  }
+
+  function initSlider(container) {
+    const swiperElement = container.querySelector('.js-besmartvideoslider-swiper');
+    if (!swiperElement || typeof Swiper === 'undefined') {
+      return;
+    }
+
+    let swiper;
+    let isVisible = true;
+    const canAutoplay = shouldAutoplay();
+
+    const prepareActiveVideo = function () {
+      if (!swiper || swiper.destroyed || !isVisible) {
         return;
       }
 
-      let swiper; // potrzebne, żeby użyć w listenerze 'ended'
+      pauseVideos(swiperElement);
 
-      const updatePosters = function () {
-        swiperElement.querySelectorAll('video').forEach(function (video) {
-          setVideoPoster(video);
-        });
-      };
-
-      const prepareActiveVideo = function () {
-        // zatrzymaj wszystkie filmy i usuń nasłuchiwacze
-        pauseVideos(swiperElement);
-
-        // znajdź video w aktualnie aktywnym slajdzie
-        const activeVideo = swiperElement.querySelector('.swiper-slide-active video');
-        if (!activeVideo) {
-          return;
+      const activeVideo = swiperElement.querySelector('.swiper-slide-active video');
+      swiperElement.querySelectorAll('video').forEach(function (video) {
+        if (video !== activeVideo) {
+          clearVideoSource(video);
         }
-
-        // ustaw źródło
-        setVideoSource(activeVideo);
-
-        // ustaw reakcję na koniec filmu – PRZEŁĄCZ SLIDE
-        activeVideo.onended = function () {
-          if (swiper && !swiper.destroyed) {
-            swiper.slideNext();
-          }
-        };
-
-        // odtwórz
-        playVideo(activeVideo);
-      };
-
-      swiper = new Swiper(swiperElement, {
-        loop: true,
-        // USUWAMY autoplay oparty na czasie
-        // autoplay: { ... }
-
-        pagination: {
-          el: container.querySelector('.swiper-pagination'),
-          clickable: true,
-        },
-        navigation: {
-          nextEl: container.querySelector('.swiper-button-next'),
-          prevEl: container.querySelector('.swiper-button-prev'),
-        },
-        on: {
-          init: function () {
-            updatePosters();
-            prepareActiveVideo();
-          },
-          // po zakończeniu animacji zmiany slajdu przygotuj nowe video
-          slideChangeTransitionEnd: function () {
-            prepareActiveVideo();
-          }
-        },
       });
 
-      const refreshWithDebounce = debounce(function () {
-        updatePosters();
-        prepareActiveVideo();
-      }, 100);
+      if (!activeVideo) {
+        return;
+      }
 
-      mobileQuery.addEventListener('change', refreshWithDebounce);
-      window.addEventListener('resize', refreshWithDebounce);
+      setVideoSource(activeVideo);
+
+      if (!canAutoplay) {
+        return;
+      }
+
+      activeVideo.onended = function () {
+        if (swiper && !swiper.destroyed) {
+          swiper.slideNext();
+        }
+      };
+
+      playVideo(activeVideo);
+    };
+
+    const stopAllVideos = function () {
+      pauseVideos(swiperElement);
+      swiperElement.querySelectorAll('video').forEach(function (video) {
+        clearVideoSource(video);
+      });
+    };
+
+    const updatePosters = function () {
+      swiperElement.querySelectorAll('video').forEach(function (video) {
+        setVideoPoster(video);
+      });
+    };
+
+    swiper = new Swiper(swiperElement, {
+      loop: true,
+      pagination: {
+        el: container.querySelector('.swiper-pagination'),
+        clickable: true,
+      },
+      navigation: {
+        nextEl: container.querySelector('.swiper-button-next'),
+        prevEl: container.querySelector('.swiper-button-prev'),
+      },
+      on: {
+        init: function () {
+          updatePosters();
+          scheduleIdle(prepareActiveVideo);
+        },
+        slideChangeTransitionEnd: function () {
+          prepareActiveVideo();
+        }
+      },
+    });
+
+    const refreshWithDebounce = debounce(function () {
+      updatePosters();
+      prepareActiveVideo();
+    }, 100);
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.target !== container) {
+            return;
+          }
+
+          isVisible = entry.isIntersecting;
+          if (isVisible) {
+            prepareActiveVideo();
+          } else {
+            stopAllVideos();
+          }
+        });
+      }, {
+        threshold: 0.2,
+      });
+
+      observer.observe(container);
+    }
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        stopAllVideos();
+        return;
+      }
+
+      prepareActiveVideo();
+    });
+
+    mobileQuery.addEventListener('change', refreshWithDebounce);
+    window.addEventListener('resize', refreshWithDebounce);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const sliders = document.querySelectorAll('.besmartvideoslider');
+
+    sliders.forEach(function (container) {
+      if (!('IntersectionObserver' in window)) {
+        initSlider(container);
+        return;
+      }
+
+      const initObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.target !== container || !entry.isIntersecting) {
+            return;
+          }
+
+          initObserver.unobserve(container);
+          initSlider(container);
+        });
+      }, {
+        rootMargin: '300px 0px',
+        threshold: 0.01,
+      });
+
+      initObserver.observe(container);
     });
   });
 })();
