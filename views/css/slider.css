@@ -40,16 +40,6 @@
   height: 100%;
   object-fit: cover;
 }
-.besmartvideoslider--large .besmartvideoslider__video-wrapper {
-  padding-top: 0;
-}
-
-.besmartvideoslider--large .besmartvideoslider__video {
-  position: relative;
-  display: block;
-  height: auto;
-  object-fit: contain;
-}
 
 .pscat-overlay.besmartvideoslider__bottom-overlay{
   position: absolute;
