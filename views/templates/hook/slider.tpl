@@ -11,6 +11,7 @@
               loop
               playsinline
               preload="none"
+              {if $slide.desktop_poster_src}poster="{$slide.desktop_poster_src}"{/if}
               data-desktop-src="{$slide.desktop_video_src}"
               data-mobile-src="{$slide.mobile_video_src}"
               data-desktop-poster="{$slide.desktop_poster_src}"

@@ -101,7 +101,18 @@
 
     let swiper;
     let isVisible = true;
+    let canLoadVideo = false;
     const canAutoplay = shouldAutoplay();
+    const shouldDelayInitialVideo = container.dataset.placement === 'small_sequence';
+
+    const unlockVideoLoading = function () {
+      if (canLoadVideo) {
+        return;
+      }
+
+      canLoadVideo = true;
+      prepareActiveVideo();
+    };
 
     const prepareActiveVideo = function () {
       if (!swiper || swiper.destroyed || !isVisible) {
@@ -109,6 +120,10 @@
       }
 
       pauseVideos(swiperElement);
+
+      if (!canLoadVideo) {
+        return;
+      }
 
       const activeVideo = swiperElement.querySelector('.swiper-slide-active video');
       swiperElement.querySelectorAll('video').forEach(function (video) {
@@ -162,7 +177,13 @@
       on: {
         init: function () {
           updatePosters();
-          scheduleIdle(prepareActiveVideo);
+          if (!shouldDelayInitialVideo) {
+            canLoadVideo = true;
+            scheduleIdle(prepareActiveVideo);
+          }
+        },
+        touchStart: function () {
+          unlockVideoLoading();
         },
         slideChangeTransitionEnd: function () {
           prepareActiveVideo();
@@ -194,6 +215,24 @@
       });
 
       observer.observe(container);
+    }
+
+    if (shouldDelayInitialVideo) {
+      ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(function (eventName) {
+        window.addEventListener(eventName, unlockVideoLoading, { passive: true, once: true });
+      });
+
+      const loadOnWindowReady = function () {
+        setTimeout(unlockVideoLoading, 2000);
+      };
+
+      if (document.readyState === 'complete') {
+        loadOnWindowReady();
+      } else {
+        window.addEventListener('load', loadOnWindowReady, { once: true });
+      }
+    } else {
+      canLoadVideo = true;
     }
 
     document.addEventListener('visibilitychange', function () {
