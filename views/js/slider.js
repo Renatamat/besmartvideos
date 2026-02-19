@@ -40,6 +40,17 @@
     video.dataset.currentSrc = targetSrc;
   }
 
+  function clearVideoSource(video) {
+    if (!video || !video.dataset.currentSrc) {
+      return;
+    }
+
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.dataset.currentSrc = '';
+  }
+
   function playVideo(video) {
     if (!video) {
       return;
@@ -76,7 +87,46 @@
         return;
       }
 
-      let swiper; // potrzebne, żeby użyć w listenerze 'ended'
+      let swiper;
+      let isVisible = true;
+
+      const prepareActiveVideo = function () {
+        if (!swiper || swiper.destroyed || !isVisible) {
+          return;
+        }
+
+        pauseVideos(swiperElement);
+
+        const activeVideo = swiperElement.querySelector('.swiper-slide-active video');
+
+        swiperElement.querySelectorAll('video').forEach(function (video) {
+          if (video !== activeVideo) {
+            video.onended = null;
+            clearVideoSource(video);
+          }
+        });
+
+        if (!activeVideo) {
+          return;
+        }
+
+        setVideoSource(activeVideo);
+
+        activeVideo.onended = function () {
+          if (swiper && !swiper.destroyed) {
+            swiper.slideNext();
+          }
+        };
+
+        playVideo(activeVideo);
+      };
+
+      const stopAllVideos = function () {
+        pauseVideos(swiperElement);
+        swiperElement.querySelectorAll('video').forEach(function (video) {
+          clearVideoSource(video);
+        });
+      };
 
       const updatePosters = function () {
         swiperElement.querySelectorAll('video').forEach(function (video) {
@@ -84,35 +134,8 @@
         });
       };
 
-      const prepareActiveVideo = function () {
-        // zatrzymaj wszystkie filmy i usuń nasłuchiwacze
-        pauseVideos(swiperElement);
-
-        // znajdź video w aktualnie aktywnym slajdzie
-        const activeVideo = swiperElement.querySelector('.swiper-slide-active video');
-        if (!activeVideo) {
-          return;
-        }
-
-        // ustaw źródło
-        setVideoSource(activeVideo);
-
-        // ustaw reakcję na koniec filmu – PRZEŁĄCZ SLIDE
-        activeVideo.onended = function () {
-          if (swiper && !swiper.destroyed) {
-            swiper.slideNext();
-          }
-        };
-
-        // odtwórz
-        playVideo(activeVideo);
-      };
-
       swiper = new Swiper(swiperElement, {
         loop: true,
-        // USUWAMY autoplay oparty na czasie
-        // autoplay: { ... }
-
         pagination: {
           el: container.querySelector('.swiper-pagination'),
           clickable: true,
@@ -126,7 +149,6 @@
             updatePosters();
             prepareActiveVideo();
           },
-          // po zakończeniu animacji zmiany slajdu przygotuj nowe video
           slideChangeTransitionEnd: function () {
             prepareActiveVideo();
           }
@@ -137,6 +159,36 @@
         updatePosters();
         prepareActiveVideo();
       }, 100);
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.target !== container) {
+              return;
+            }
+
+            isVisible = entry.isIntersecting;
+            if (isVisible) {
+              prepareActiveVideo();
+            } else {
+              stopAllVideos();
+            }
+          });
+        }, {
+          threshold: 0.2,
+        });
+
+        observer.observe(container);
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          stopAllVideos();
+          return;
+        }
+
+        prepareActiveVideo();
+      });
 
       mobileQuery.addEventListener('change', refreshWithDebounce);
       window.addEventListener('resize', refreshWithDebounce);
