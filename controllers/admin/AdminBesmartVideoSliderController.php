@@ -167,6 +167,13 @@ class AdminBesmartVideoSliderController extends ModuleAdminController
                 ],
                 [
                     'type' => 'text',
+                    'label' => $this->l('Button label on category page (optional)'),
+                    'name' => 'button_label_category',
+                    'lang' => true,
+                    'desc' => $this->l('Used only in displayBesmartVideosLarge hook. If empty, default button label is used.'),
+                ],
+                [
+                    'type' => 'text',
                     'label' => $this->l('Button URL'),
                     'name' => 'button_url',
                     'lang' => true,
