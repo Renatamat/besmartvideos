@@ -45,3 +45,10 @@ Aktualizacja do wersji `1.1.1`:
 
 - dodaje kolumnę `description` (TEXT) do tabeli `besmartvideoslider_slides_lang`,
 - umożliwia wyświetlanie opisu HTML pod video oraz przycisku pod opisem.
+
+
+Aktualizacja do wersji `1.1.2`:
+
+- dodaje kolumnę `button_label_category` do tabeli `besmartvideoslider_slides_lang`,
+- pozwala ustawić osobny napis przycisku dla hooka `displayBesmartVideosLarge` (np. na stronie kategorii),
+- przy pustym polu używany jest domyślny `button_label`.

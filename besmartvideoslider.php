@@ -15,7 +15,7 @@ class Besmartvideoslider extends Module
     {
         $this->name = 'besmartvideoslider';
         $this->tab = 'front_office_features';
-        $this->version = '1.1.1';
+        $this->version = '1.1.2';
         $this->author = 'BeSmart';
         $this->bootstrap = true;
         $this->need_instance = 0;
@@ -162,7 +162,7 @@ class Besmartvideoslider extends Module
 
     public function hookDisplayBesmartVideosLarge($params)
     {
-        return $this->renderSlider(BesmartVideoSlide::PLACEMENT_LARGE, 'large', 'views/templates/hook/large.tpl');
+        return $this->renderSlider(BesmartVideoSlide::PLACEMENT_LARGE, 'large', 'views/templates/hook/large.tpl', true);
     }
 
     public function hookDisplayTopColumn($params)
@@ -170,7 +170,7 @@ class Besmartvideoslider extends Module
         return $this->renderSlider(BesmartVideoSlide::PLACEMENT_LARGE, 'large', 'views/templates/hook/large.tpl');
     }
 
-    private function renderSlider(string $placement, string $variant, string $template)
+    private function renderSlider(string $placement, string $variant, string $template, bool $preferCategoryLabel = false)
     {
         if (!Configuration::get('BESMARTVIDEOSLIDER_ENABLED')) {
             return '';
@@ -184,6 +184,11 @@ class Besmartvideoslider extends Module
             $slide['mobile_video_src'] = $this->resolveVideoPath($slide['mobile_video'] ?? '');
             $slide['desktop_poster_src'] = $this->resolvePosterPath($slide['desktop_video'] ?? '');
             $slide['mobile_poster_src'] = $this->resolvePosterPath($slide['mobile_video'] ?? '');
+            $slide['button_label_effective'] = $slide['button_label'] ?? '';
+
+            if ($preferCategoryLabel && !empty($slide['button_label_category'])) {
+                $slide['button_label_effective'] = $slide['button_label_category'];
+            }
         }
         unset($slide);
 
@@ -218,6 +223,7 @@ class Besmartvideoslider extends Module
             `mobile_video` VARCHAR(255) NOT NULL,
             `description` TEXT NULL,
             `button_label` VARCHAR(255) NOT NULL,
+            `button_label_category` VARCHAR(255) NULL,
             `button_url` VARCHAR(255) NOT NULL,
             PRIMARY KEY (`id_slide`, `id_lang`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4;';
