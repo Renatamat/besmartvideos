@@ -19,7 +19,7 @@
             >
             </video>
 
-            {if !$slide.description && $slide.button_label_effective && $slide.button_url}
+            {if (!$slide.show_description || !$slide.description) && $slide.button_label_effective && $slide.button_url}
               <a
                 href="{$slide.button_url|escape:'html':'UTF-8'}"
                 class="besmartvideoslider__desktop-link d-none d-md-block"
@@ -28,9 +28,9 @@
             {/if}
           </div>
 
-          {if $slide.description || ($slide.button_label_effective && $slide.button_url)}
+          {if ($slide.show_description && $slide.description) || ($slide.button_label_effective && $slide.button_url)}
             <div class="pscat-overlay besmartvideoslider__bottom-overlay">
-              {if $slide.description}
+              {if $slide.show_description && $slide.description}
                 <div class="pscat-meta besmartvideoslider__description 
                      {if $slide.button_label_effective && $slide.button_url} description-with-button {/if}
                      ">{$slide.description nofilter}</div>

@@ -185,9 +185,11 @@ class Besmartvideoslider extends Module
             $slide['desktop_poster_src'] = $this->resolvePosterPath($slide['desktop_video'] ?? '');
             $slide['mobile_poster_src'] = $this->resolvePosterPath($slide['mobile_video'] ?? '');
             $slide['button_label_effective'] = $slide['button_label'] ?? '';
+            $slide['show_description'] = true;
 
             if ($preferCategoryLabel && !empty($slide['button_label_category'])) {
                 $slide['button_label_effective'] = $slide['button_label_category'];
+                $slide['show_description'] = false;
             }
         }
         unset($slide);
